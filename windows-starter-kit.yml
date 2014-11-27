@@ -1,0 +1,152 @@
+application:
+  configuration:
+    input.db-user: "nopCommerce"
+    input.db-user-password: "n0pC0mm8rc8"
+    input.site-source-url: "https://dl.dropboxusercontent.com/u/250836/nopCommerce_3.40.zip"
+    input.pool-name: "myPool"
+    input.app-name: "myApp"
+    input.admin-email: "admin@yourStore.com"
+    input.admin-pass: "123QweAsd"
+  interfaces:
+    input:
+      site-source-url: "bind(workflow#input.site-source-url)"
+      db-user: "bind(workflow#input.db-user)"
+      db-user-password: "bind(workflow#input.db-user-password)"
+      pool-name: "bind(workflow#input.pool-name)"
+      app-name: "bind(workflow#input.app-name)"
+      admin-email: "bind(workflow#input.admin-email)"
+      admin-pass: "bind(workflow#input.admin-pass)"
+  bindings:
+    - [workflow, mssql]
+    - [workflow, iis]
+  components:
+    mssql:
+      type: reference.Submodule
+      configuration:
+        __locator.application-id: "Database"
+      interfaces:
+        MSSQL:
+          schema: receive-command(string db-user, string db-user-password, list<string> db-user-privileges => object connection)
+          db-host: publish-signal(string)
+          db-port: publish-signal(int)
+          dbms: publish-signal(object)
+    iis:
+      type: reference.Submodule
+      configuration:
+        __locator.application-id: "Application Server"
+      interfaces:
+        IIS:
+          server-ip: publish-signal(list<string>)
+          server-dns: publish-signal(list<string>)
+          pool: receive-command(string pool-name, object pool-properties)
+          site: receive-command(string site-name, object site-properties)
+          app: receive-command(string app-name, string site-name, object app-properties)
+    workflow:
+      type: workflow.Instance
+      interfaces:
+        mssql:
+          schema: send-command(string db-user, string db-user-password, list<string> db-user-privileges => object connection)
+          db-host: consume-signal(string)
+          db-port: consume-signal(int)
+          dbms: consume-signal(object)
+        iis:
+          server-ip: consume-signal(list<string>)
+          server-dns: consume-signal(list<string>)
+          pool: send-command(string pool-name, object pool-properties)
+          site: send-command(string site-name, object site-properties)
+          app: send-command(string app-name, string site-name, object app-properties)
+        input:
+          site-source-url: configuration(string)
+          db-user: configuration(string)
+          db-user-password: configuration(string)
+          pool-name: configuration(string)
+          app-name: configuration(string)
+          admin-email: configuration(string)
+          admin-pass: configuration(string)
+        result:
+          site-url: publish-signal(string)
+      required: [mssql, iis]
+      configuration:
+        configuration.workflows:
+          launch:
+            steps:
+              - get-signals:
+                  action: getSignals
+                  output:
+                    signals: result
+              - create-db-schema:
+                  action: commandCall
+                  precedingPhases: [get-signals]
+                  parameters:
+                    service: mssql
+                    command: schema
+                    timeout: 5 minutes
+                    arguments:
+                      db-user: "{$.db-user}"
+                      db-user-password: "{$.db-user-password}"
+                      db-user-privileges: ["all"]
+                  output:
+                    con-result: result
+              - create-iis-pool:
+                  action: commandCall
+                  precedingPhases: [get-signals]
+                  parameters:
+                    service: iis
+                    command: pool
+                    timeout: 5 minutes
+                    arguments:
+                      pool-name: "{$.pool-name}"
+                      pool-properties: {action: add}
+              - create-iis-site:
+                  action: commandCall
+                  precedingPhases: [create-iis-pool]
+                  parameters:
+                    service: iis
+                    command: site
+                    timeout: 5 minutes
+                    arguments:
+                      site-name: "{$.signals.iis.server-dns[0]}"
+                      site-properties: {action: ['add','start'], application_pool: "{$.pool-name}", bindings: "http://*:80"}
+              - create-iis-app:
+                  action: commandCall
+                  precedingPhases: [create-iis-site]
+                  parameters:
+                    service: iis
+                    command: app
+                    timeout: 5 minutes
+                    arguments:
+                      site-name: "{$.signals.iis.server-dns[0]}"
+                      app-name: "{$.app-name}"
+                      app-properties: {action: add, application_pool: "{$.pool-name}"}
+              - provision-vm:
+                  action: provisionVms
+                  precedingPhases: [get-signals]
+                  parameters:
+                    roleName: default
+                    hardwareId: ""
+                    vmIdentity: "Administrator"
+                    retryCount: 2
+                    staticIps: "{$.signals.iis.server-ip}"
+              - get-site-source:
+                  action: execrun
+                  precedingPhases: [provision-vm, create-iis-app]
+                  parameters:
+                    roles: [default]
+                    isSudo: false
+                    command:
+                      - |
+                          wget {$.site-source-url} -P /cygdrive/c/cygwin64/home/Administrator/
+                          unzip /cygdrive/c/cygwin64/home/Administrator/nopCommerce_3.40.zip -d /cygdrive/c/inetpub/wwwroot/"{$.signals.iis.server-dns[0]}"
+                          cd /cygdrive/c/inetpub/wwwroot/
+                          icacls.exe "{$.signals.iis.server-dns[0]}" /grant 'BUILTIN\\IIS_IUSRS:(OI)(CI)F' /T
+              - setup-connection:
+                  action: execrun
+                  precedingPhases: [get-site-source,create-db-schema]
+                  parameters:
+                    roles: [default]
+                    isSudo: false
+                    command:
+                      - curl --data "AdminEmail={$.admin-email}&AdminPassword={$.admin-pass}&ConfirmPassword={$.admin-pass}&InstallSampleData=true&InstallSampleData=false&DataProvider=sqlserver&SqlServerCreateDatabase=true&SqlServerCreateDatabase=false&SqlConnectionInfo=sqlconnectioninfo_values&SqlServerName={$.signals.mssql.db-host}&SqlDatabaseName={$.con-result.connection.db-name}&SqlAuthenticationType=sqlauthentication&SqlServerUsername={$.con-result.connection.db-user}&SqlServerPassword={$.con-result.connection.db-user-password}&DatabaseConnectionString=&UseCustomCollation=false&Collation=SQL_Latin1_General_CP1_CI_AS&language=%2FInstall%2FChangeLanguage%3Flanguage%3Den"
+            return:
+              site-url:
+                value: "http://{$.signals.iis.server-dns[0]}"
