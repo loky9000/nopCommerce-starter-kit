@@ -1,0 +1,8 @@
+simplejson
+pyaml
+requests
+PyYAML
+testtools
+nose
+nose_xunitmp
+pycurl

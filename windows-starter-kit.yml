@@ -5,7 +5,7 @@ application:
     input.site-source-url: "https://s3.amazonaws.com/qubell-starter-kit-artifacts/deps/nopCommerce_3.40.zip"
     input.pool-name: "myPool"
     input.app-name: "myApp"
-    input.admin-email: "admin@yourStore.com"
+    input.admin-email: "admin%40yourStore.com"
     input.admin-pass: "123QweAsd"
   interfaces:
     input:
@@ -151,8 +151,7 @@ application:
                     isSudo: false
                     command:
                       - |
-                          email=`echo "{$.admin-email}" | sed 's/@/%40/g'`
-                          curl --data "AdminEmail=$$email&AdminPassword={$.admin-pass}&ConfirmPassword={$.admin-pass}&InstallSampleData=true&InstallSampleData=false&DataProvider=sqlserver&SqlServerCreateDatabase=true&SqlServerCreateDatabase=false&SqlConnectionInfo=sqlconnectioninfo_values&SqlServerName={$.signals.mssql.db-host}&SqlDatabaseName={$.con-result.connection.db-name}&SqlAuthenticationType=sqlauthentication&SqlServerUsername={$.con-result.connection.db-user}&SqlServerPassword={$.con-result.connection.db-user-password}&DatabaseConnectionString=&UseCustomCollation=false&Collation=SQL_Latin1_General_CP1_CI_AS&language=%2FInstall%2FChangeLanguage%3Flanguage%3Den" http://{$.signals.iis.server-dns[0]}/install
+                          curl --data "AdminEmail={$.admin-email}&AdminPassword={$.admin-pass}&ConfirmPassword={$.admin-pass}&InstallSampleData=true&InstallSampleData=false&DataProvider=sqlserver&SqlServerCreateDatabase=true&SqlServerCreateDatabase=false&SqlConnectionInfo=sqlconnectioninfo_values&SqlServerName={$.signals.mssql.db-host}&SqlDatabaseName={$.con-result.connection.db-name}&SqlAuthenticationType=sqlauthentication&SqlServerUsername={$.con-result.connection.db-user}&SqlServerPassword={$.con-result.connection.db-user-password}&DatabaseConnectionString=&UseCustomCollation=false&Collation=SQL_Latin1_General_CP1_CI_AS&language=%2FInstall%2FChangeLanguage%3Flanguage%3Den" http://{$.signals.iis.server-dns[0]}/install
                           i=0; while [ $$i -le 77 -a "`curl -s -w "%{http_code}" "http://{$.signals.iis.server-dns[0]}" -o /dev/null`" == "000" ]; do echo "$$i"; sleep 10; ((i++)); done; if [ "`curl -s -w "%{http_code}" "http://{$.signals.iis.server-dns[0]}" -o /dev/null`" == "200" ]; then exit 0; else exit 1; fi;
             return:
               site-url:
