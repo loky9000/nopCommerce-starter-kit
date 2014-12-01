@@ -2,7 +2,7 @@ application:
   configuration:
     input.db-user: "nopCommerce"
     input.db-user-password: "n0pC0mm8rc8"
-    input.site-source-url: "https://dl.dropboxusercontent.com/u/250836/nopCommerce_3.40.zip"
+    input.site-source-url: "https://s3.amazonaws.com/qubell-starter-kit-artifacts/deps/nopCommerce_3.40.zip"
     input.pool-name: "myPool"
     input.app-name: "myApp"
     input.admin-email: "admin@yourStore.com"
@@ -16,6 +16,8 @@ application:
       app-name: "bind(workflow#input.app-name)"
       admin-email: "bind(workflow#input.admin-email)"
       admin-pass: "bind(workflow#input.admin-pass)"
+    nopCommerce:
+      url: "bind(workflow#result.site-url)"
   bindings:
     - [workflow, mssql]
     - [workflow, iis]
@@ -64,7 +66,9 @@ application:
           admin-email: configuration(string)
           admin-pass: configuration(string)
         result:
-          site-url: publish-signal(string)
+          site-url: 
+            type: publish-signal(string)
+            name: Site URL
       required: [mssql, iis]
       configuration:
         configuration.workflows:
@@ -136,9 +140,9 @@ application:
                     command:
                       - |
                           wget {$.site-source-url} -P /cygdrive/c/cygwin64/home/Administrator/
-                          unzip /cygdrive/c/cygwin64/home/Administrator/nopCommerce_3.40.zip -d /cygdrive/c/inetpub/wwwroot/"{$.signals.iis.server-dns[0]}"
+                          unzip /cygdrive/c/cygwin64/home/Administrator/nopCommerce_3.40.zip -d /cygdrive/c/inetpub/wwwroot/{$.signals.iis.server-dns[0]}
                           cd /cygdrive/c/inetpub/wwwroot/
-                          icacls.exe "{$.signals.iis.server-dns[0]}" /grant 'BUILTIN\\IIS_IUSRS:(OI)(CI)F' /T
+                          icacls.exe {$.signals.iis.server-dns[0]} /inheritance:e /grant 'BUILTIN\\IIS_IUSRS:(OI)(CI)F' /T /C
               - setup-connection:
                   action: execrun
                   precedingPhases: [get-site-source,create-db-schema]
@@ -146,7 +150,11 @@ application:
                     roles: [default]
                     isSudo: false
                     command:
-                      - curl --data "AdminEmail={$.admin-email}&AdminPassword={$.admin-pass}&ConfirmPassword={$.admin-pass}&InstallSampleData=true&InstallSampleData=false&DataProvider=sqlserver&SqlServerCreateDatabase=true&SqlServerCreateDatabase=false&SqlConnectionInfo=sqlconnectioninfo_values&SqlServerName={$.signals.mssql.db-host}&SqlDatabaseName={$.con-result.connection.db-name}&SqlAuthenticationType=sqlauthentication&SqlServerUsername={$.con-result.connection.db-user}&SqlServerPassword={$.con-result.connection.db-user-password}&DatabaseConnectionString=&UseCustomCollation=false&Collation=SQL_Latin1_General_CP1_CI_AS&language=%2FInstall%2FChangeLanguage%3Flanguage%3Den"
+                      - |
+                          email=`echo "{$.admin-email}" | sed 's/@/%40/g'`
+                          curl --data "AdminEmail=$$email&AdminPassword={$.admin-pass}&ConfirmPassword={$.admin-pass}&InstallSampleData=true&InstallSampleData=false&DataProvider=sqlserver&SqlServerCreateDatabase=true&SqlServerCreateDatabase=false&SqlConnectionInfo=sqlconnectioninfo_values&SqlServerName={$.signals.mssql.db-host}&SqlDatabaseName={$.con-result.connection.db-name}&SqlAuthenticationType=sqlauthentication&SqlServerUsername={$.con-result.connection.db-user}&SqlServerPassword={$.con-result.connection.db-user-password}&DatabaseConnectionString=&UseCustomCollation=false&Collation=SQL_Latin1_General_CP1_CI_AS&language=%2FInstall%2FChangeLanguage%3Flanguage%3Den" http://{$.signals.iis.server-dns[0]}/install
+                          i=0; while [ $$i -le 77 -a "`curl -s -w "%{http_code}" "http://{$.signals.iis.server-dns[0]}" -o /dev/null`" == "000" ]; do echo "$$i"; sleep 10; ((i++)); done; if [ "`curl -s -w "%{http_code}" "http://{$.signals.iis.server-dns[0]}" -o /dev/null`" == "200" ]; then exit 0; else exit 1; fi;
             return:
               site-url:
+                description: nopCommerce Site URL
                 value: "http://{$.signals.iis.server-dns[0]}"
