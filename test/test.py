@@ -7,13 +7,14 @@ from qubell.api.testing import *
 })
 class WindowsStarterKitComponentTestCase(BaseComponentTestCase):
     name = "windows-starter-kit"
+    meta = "https://raw.githubusercontent.com/jollyrojer/windows-starter-kit/master/meta.yml"
     apps = [{
         "name": name,
         "file": os.path.realpath(os.path.join(os.path.dirname(__file__), '../%s.yml' % name))
     }]
     @classmethod
     def timeout(cls):
-        return 40
+        return 60
 
     @instance(byApplication=name)
     @values({"nopCommerce.url": "siteurl"})

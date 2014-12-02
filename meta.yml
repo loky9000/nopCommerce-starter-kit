@@ -1,0 +1,19 @@
+kit:
+  name: "Windows Starter Kit"
+  link: https://github.com/jollyrojer/windows-starter-kit
+  applications:
+    - name: "nopCommerce"
+      manifest: https://raw.github.com/jollyrojer/windows-starter-kit/master/windows-starter-kit.yml
+    - name: "Database"
+      manifest: https://raw.githubusercontent.com/loky9000/component-mssql/new_tests/component-mssql.yml 
+    - name: "Application Server"
+      manifest: https://raw.github.com/jollyrojer/component-iis/master/component-iis.yml
+  provider:
+    name: "Qubell"
+    link: http://qubell.com
+  documentation:
+    overview: |
+      This application requires the following items to be configured in your environment:
+        * Amazon EC2 or Rackspace CloudServers account;
+        * Ports 22, 80, 1433. 3389 open on the ﬁrewall.
+      Please refer to the Getting Started for step-by-step instructions on how to configure your environment.
