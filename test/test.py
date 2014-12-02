@@ -29,5 +29,5 @@ class WindowsStarterKitComponentTestCase(BaseComponentTestCase):
         body = buffer.getvalue()
         if 'nopCommerce' in body:        
           assert result == 0
-        else
+        else:
           assert result == 1

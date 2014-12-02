@@ -4,7 +4,7 @@ windows-starter-kit
 
 Installs and configures nopCommerce Store.
 
-[![Install](https://raw.github.com/qubell-bazaar/component-skeleton/master/img/install.png)](https://express.qubell.com/applications/upload?metadataUrl=https://raw.github.com/qubell-bazaar/windows-starter-kit/1.0-35p/meta.yml)
+[![Install](https://raw.github.com/qubell-bazaar/component-skeleton/master/img/install.png)](https://express.qubell.com/applications/upload?metadataUrl=https://raw.github.com/jollyrojer/windows-starter-kit/master/meta.yml)
 
 Features
 --------
@@ -33,8 +33,8 @@ Configuration parameters
 ------------------------
 - input.db-user: Desired database user
 - input.db-user-password: Database user password
-- input.site-source-url: nopCommerce sources download URL
 - input.pool-name: IIS Pool name
 - input.app-name: IIS App name
 - input.admin-email: Store admin email
 - input.admin-pass: Store admin password
+- input.site-source-url: nopCommerce sources download URL
