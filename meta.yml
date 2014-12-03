@@ -1,13 +1,13 @@
 kit:
-  name: "Windows Starter Kit"
-  link: https://github.com/jollyrojer/windows-starter-kit
+  name: "nopCommerce Starter Kit"
+  link: https://github.com/qubell-bazaar/nopCommerce-starter-kit
   applications:
     - name: "nopCommerce"
-      manifest: https://raw.github.com/jollyrojer/windows-starter-kit/master/windows-starter-kit.yml
+      manifest: https://raw.github.com/qubell-bazaar/nopCommerce-starter-kit/master/nopCommerce-starter-kit.yml
     - name: "Database"
-      manifest: https://raw.githubusercontent.com/loky9000/component-mssql/new_tests/component-mssql.yml 
+      manifest: https://raw.github.com/qubell-bazaar/component-mssql/1.1-35p/component-mssql.yml 
     - name: "Application Server"
-      manifest: https://raw.github.com/jollyrojer/component-iis/master/component-iis.yml
+      manifest: https://raw.github.com/qubell-bazaar/component-iis/1.0-35p/component-iis.yml
   provider:
     name: "Qubell"
     link: http://qubell.com
