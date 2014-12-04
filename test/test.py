@@ -5,9 +5,9 @@ from qubell.api.testing import *
 @environment({
     "default": {},
 })
-class WindowsStarterKitComponentTestCase(BaseComponentTestCase):
-    name = "windows-starter-kit"
-    meta = "https://raw.githubusercontent.com/jollyrojer/windows-starter-kit/master/meta.yml"
+class nopCommerceStarterKit(BaseComponentTestCase):
+    name = "nopCommerce-starter-kit"
+    meta = "https://raw.github.com/qubell-bazaar/nopCommerce-starter-kit/master/meta.yml"
     apps = [{
         "name": name,
         "file": os.path.realpath(os.path.join(os.path.dirname(__file__), '../%s.yml' % name))
@@ -18,7 +18,7 @@ class WindowsStarterKitComponentTestCase(BaseComponentTestCase):
 
     @instance(byApplication=name)
     @values({"nopCommerce.url": "siteurl"})
-    def test_port(self, instance, siteurl):
+    def test_site(self, instance, siteurl):
         import pycurl
         from StringIO import StringIO
         buffer = StringIO()
@@ -28,7 +28,4 @@ class WindowsStarterKitComponentTestCase(BaseComponentTestCase):
         c.perform()
         c.close()
         body = buffer.getvalue()
-        if 'nopCommerce' in body:        
-          assert result == 0
-        else:
-          assert result == 1
+        assert 'nopCommerce' in body        
