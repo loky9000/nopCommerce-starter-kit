@@ -7,7 +7,7 @@ kit:
     - name: "Database"
       manifest: https://raw.github.com/qubell-bazaar/component-mssql/1.1-35p/component-mssql.yml 
     - name: "Application Server"
-      manifest: https://raw.github.com/qubell-bazaar/component-iis/1.0-35p/component-iis.yml
+      manifest: https://raw.github.com/qubell-bazaar/component-iis/1.1-35p/component-iis.yml
   provider:
     name: "Qubell"
     link: http://qubell.com
