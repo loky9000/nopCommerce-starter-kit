@@ -7,7 +7,7 @@ from qubell.api.testing import *
 })
 class nopCommerceStarterKit(BaseComponentTestCase):
     name = "nopCommerce-starter-kit"
-    meta = "https://raw.github.com/qubell-bazaar/nopCommerce-starter-kit/master/meta.yml"
+    meta = os.path.realpath(os.path.join(os.path.dirname(__file__), '../meta.yml'))
     apps = [{
         "name": name,
         "file": os.path.realpath(os.path.join(os.path.dirname(__file__), '../%s.yml' % name))
