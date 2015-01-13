@@ -3,7 +3,7 @@ kit:
   link: https://github.com/qubell-bazaar/nopCommerce-starter-kit
   applications:
     - name: "nopCommerce"
-      manifest: https://raw.github.com/qubell-bazaar/nopCommerce-starter-kit/master/nopCommerce-starter-kit.yml
+      manifest: https://raw.github.com/qubell-bazaar/nopCommerce-starter-kit/2.0-36p/nopCommerce-starter-kit.yml
     - name: "Database"
       manifest: https://raw.github.com/qubell-bazaar/component-mssql/2.0-36p/component-mssql.yml 
     - name: "Application Server"
